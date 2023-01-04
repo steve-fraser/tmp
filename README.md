@@ -21,3 +21,35 @@
     "org.opencontainers.image.source": "https://github.com/stefanprodan/podinfo"
   }
 }
+
+apiVersion: notification.toolkit.fluxcd.io/v1beta2
+kind: Alert
+metadata:
+  name: example-alert
+  namespace: example
+spec:
+  summary: "blah blah"
+  providerRef:
+    name: slack
+  eventSeverity: info
+  eventSources:
+    - kind: GitRepository
+      name: '*'
+    - kind: Kustomization
+      name: '*'
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- alert.yaml
+
+transformers:
+- |-
+  apiVersion: builtin
+  kind: PrefixSuffixTransformer
+  metadata:
+    name: alert-summary-prefixer
+  prefix: vtenant8.example.com
+  fieldSpecs:
+  - path: spec/summary
